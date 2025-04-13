@@ -1,17 +1,18 @@
 # Using Docker Compose version 3
-version: '3'
+name: Docker Image CI for GHCR
 
 services:
   # Service for the Node.js application
   item-app:
     # Use the image from GitHub Packages
-    image: carlgeralz/item-app:v1
+    image: ghcr.io/$GITHUB_USERNAME/item-app:v1
     # Map container port 8080 to host port 80
     ports:
       - "80:8080"
     # Ensure item-app starts only after item-db is running
     depends_on:
-      - item-db
+      item-db:
+        condition: service_healthy
     # Restart policy: always restart the container if it stops
     restart: always
 
@@ -21,7 +22,12 @@ services:
     image: mongo:3
     # Mount volume for data persistence
     volumes:
-      - app-db:/data/db
+    - app-db:/data/db
+    healthcheck:
+      test: ["CMD", "mongo", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     # Restart policy: always restart the container if it stops
     restart: always
 
