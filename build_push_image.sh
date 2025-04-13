@@ -1,5 +1,11 @@
 #!/bin/bash
 
+# Redirect all output (stdout and stderr) to log.txt
+if [ -f log.txt ]; then
+    rm log.txt
+fi
+exec > >(tee -a log.txt) 2>&1
+
 # Load environment variables from .env file
 if [ -f .env ]; then
     export $(grep -v '^#' .env | xargs)
@@ -22,3 +28,12 @@ echo $GITHUB_TOKEN | docker login ghcr.io -u $GITHUB_USERNAME --password-stdin
 
 # Push the image to GitHub Packages
 docker push ghcr.io/$GITHUB_USERNAME/item-app:v1
+
+# Start the application using docker-compose with sudo and password from .env
+echo $SUDO_PASSWORD | sudo -S docker-compose up
+
+# Wait for 5 minutes (300 seconds)
+sleep 300
+
+# Stop and remove the containers using docker-compose
+echo $SUDO_PASSWORD | sudo -S docker-compose down
