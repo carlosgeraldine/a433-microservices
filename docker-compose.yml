@@ -1,0 +1,31 @@
+# Using Docker Compose version 3
+version: '3'
+
+services:
+  # Service for the Node.js application
+  item-app:
+    # Use the image from GitHub Packages
+    image: carlgeralz/item-app:v1
+    # Map container port 8080 to host port 80
+    ports:
+      - "80:8080"
+    # Ensure item-app starts only after item-db is running
+    depends_on:
+      - item-db
+    # Restart policy: always restart the container if it stops
+    restart: always
+
+  # Service for the MongoDB database
+  item-db:
+    # Use MongoDB version 3 from Docker Hub
+    image: mongo:3
+    # Mount volume for data persistence
+    volumes:
+      - app-db:/data/db
+    # Restart policy: always restart the container if it stops
+    restart: always
+
+# Define named volume for database persistence
+volumes:
+  app-db:
+    # The volume will be created by Docker
